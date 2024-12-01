@@ -4,9 +4,9 @@ import pandas as pd
 import os
 from reportlab.pdfgen import canvas
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
 # Funktion, um die Testergebnisse eines Teilnehmers zu laden
 def lade_testergebnisse(teilnehmer_id):
@@ -35,7 +35,7 @@ def lade_testergebnisse(teilnehmer_id):
 # Funktion, um einen Bericht im PDF-Format zu erstellen
 def erstelle_bericht(teilnehmer_name, testergebnisse):
     try:
-        report_file = f"{teilnehmer_name}_Bericht.pdf"
+        report_file = f"/tmp/{teilnehmer_name}_Bericht.pdf"
         pdf = canvas.Canvas(report_file)
 
         # Titel und Kopfzeilen
@@ -99,7 +99,7 @@ def main():
                 st.download_button(
                     label="Bericht herunterladen",
                     data=file,
-                    file_name=report_file,
+                    file_name=f"{teilnehmer_name}_Bericht.pdf",
                     mime="application/pdf"
                 )
 
