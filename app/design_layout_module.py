@@ -113,13 +113,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
-"""
-
-
-
-# Save the corrected file
-
-with open(design_layout_module_path, 'w') as file:
-
-    file.write(optimized_design_layout_module)
