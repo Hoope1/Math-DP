@@ -4,9 +4,9 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
 # Funktion, um Prognosedaten aus der Datenbank zu laden
 def lade_prognosedaten():
@@ -46,7 +46,7 @@ def main():
         ["Brüche", "Textaufgaben", "Raumvorstellung", "Gleichungen", "Grundrechenarten", "Zahlenraum", "Gesamt"]
     )
 
-    # Linie-Diagramm für die ausgewählte Kategorie
+    # Liniendiagramm für die ausgewählte Kategorie
     fig = px.line(
         prognosen,
         x="Datum",
@@ -62,7 +62,7 @@ def main():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # Alle Kategorien in einem Diagramm anzeigen
+    # Optional: Alle Kategorien in einem Diagramm anzeigen
     if st.checkbox("Alle Kategorien anzeigen"):
         fig_all = px.line(
             prognosen.melt(id_vars=["Datum"], var_name="Kategorie", value_name="Prozent"),
