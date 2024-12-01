@@ -1,14 +1,5 @@
 import streamlit as st
-import sys
-import os
-
-# Fügen Sie den modules-Ordner zum Python-Pfad hinzu, falls nicht erkannt
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODULES_PATH = os.path.join(BASE_DIR, '../modules')
-if MODULES_PATH not in sys.path:
-    sys.path.append(MODULES_PATH)
-
-from database_setup import initialize_database
+from modules.database_setup import initialize_database
 from app.participant_filter_module import main as teilnehmerverwaltung
 from app.test_input_feature import main as testeingabe
 from app.visualization_prognoses import main as prognose_visualisierung
