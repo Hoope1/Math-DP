@@ -1,23 +1,23 @@
 import os
 import sqlite3
 
-# Fallback für Umgebungen ohne __file__
+# Absoluten Pfad zur Datenbank definieren
 try:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 except NameError:
-    BASE_DIR = os.getcwd()  # Aktuelles Arbeitsverzeichnis verwenden
+    BASE_DIR = os.getcwd()
 
-# Setup the database path and create the directory if it doesn't exist
-DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
-os.makedirs(DATA_DIR, exist_ok=True)  # Ensure the 'data' directory exists
-DB_PATH = os.path.join(DATA_DIR, 'math_course_management.db')
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
 
-# Function to initialize the database and create tables if they don't exist
+# Sicherstellen, dass das Verzeichnis 'data/' existiert
+os.makedirs(os.path.join(BASE_DIR, '..', 'data'), exist_ok=True)
+
+# Datenbank initialisieren
 def initialize_database():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
 
-        # Create table for participants
+        # Tabelle für Teilnehmer erstellen
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS teilnehmer (
             teilnehmer_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +29,7 @@ def initialize_database():
         )
         """)
 
-        # Create table for tests
+        # Tabelle für Tests erstellen
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS tests (
             test_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +54,7 @@ def initialize_database():
         )
         """)
 
-        # Create table for prognoses
+        # Tabelle für Prognosen erstellen
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS prognosen (
             prognose_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,9 +70,8 @@ def initialize_database():
             FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer (teilnehmer_id)
         )
         """)
-        
-        conn.commit()
 
-# Initialize the database
+        conn.commit()
+        print(f"Datenbank initialisiert unter: {DB_PATH}")
+
 initialize_database()
-print(f"Database initialized at: {DB_PATH}")
