@@ -4,11 +4,11 @@ import streamlit as st
 import os
 from datetime import datetime
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
-# Funktion, um Teilnehmerdaten zu laden und deren Status zu berechnen
+# Funktion, um Teilnehmerdaten zu laden und den Status zu berechnen
 def lade_teilnehmer():
     try:
         with sqlite3.connect(DB_PATH) as conn:
