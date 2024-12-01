@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import os
 
-# Verbindung zur SQLite-Datenbank herstellen
-conn = sqlite3.connect('data/math_course_management.db')
+# Absoluten Pfad zur Datenbank verwenden
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+conn = sqlite3.connect(DB_PATH)
 
 # Prozentwerte berechnen
 def calculate_percentages(points, max_points):
