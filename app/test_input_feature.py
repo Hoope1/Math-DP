@@ -4,9 +4,9 @@ import sqlite3
 import os
 from datetime import datetime
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
 # Funktion, um Testergebnisse hinzuzufügen
 def testeingabe_hinzufuegen(teilnehmer_id, test_datum, punkte_kategorien, max_punkte_kategorien):
