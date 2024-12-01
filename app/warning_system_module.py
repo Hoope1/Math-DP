@@ -4,9 +4,9 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
 # Funktion, um Teilnehmer mit nahendem Austrittsdatum zu laden
 def lade_warnungen():
@@ -27,6 +27,24 @@ def lade_warnungen():
         st.error(f"Fehler beim Laden der Warnungen: {e}")
         return pd.DataFrame()
 
+# Funktion, um inaktive Teilnehmer zu laden
+def lade_inaktive_teilnehmer():
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            query = """
+            SELECT 
+                name AS Name, 
+                austrittsdatum AS Austrittsdatum
+            FROM teilnehmer
+            WHERE julianday(austrittsdatum) < julianday('now')
+            """
+            inaktive = pd.read_sql(query, conn)
+            inaktive["Austrittsdatum"] = pd.to_datetime(inaktive["Austrittsdatum"]).dt.strftime("%d.%m.%Y")
+            return inaktive
+    except sqlite3.Error as e:
+        st.error(f"Fehler beim Laden der inaktiven Teilnehmer: {e}")
+        return pd.DataFrame()
+
 # Hauptfunktion für das Warnsystem
 def main():
     st.header("Warnsystem")
@@ -40,25 +58,14 @@ def main():
         st.warning("Folgende Teilnehmer haben ein nahendes Austrittsdatum:")
         st.dataframe(warnungen)
 
-    # Zusätzliche Optionen
-    if st.checkbox("Alle Teilnehmer anzeigen, die bereits inaktiv sind"):
-        try:
-            with sqlite3.connect(DB_PATH) as conn:
-                query = """
-                SELECT 
-                    name AS Name, 
-                    austrittsdatum AS Austrittsdatum
-                FROM teilnehmer
-                WHERE julianday(austrittsdatum) < julianday('now')
-                """
-                inaktive_teilnehmer = pd.read_sql(query, conn)
-                inaktive_teilnehmer["Austrittsdatum"] = pd.to_datetime(inaktive_teilnehmer["Austrittsdatum"]).dt.strftime("%d.%m.%Y")
-                if inaktive_teilnehmer.empty:
-                    st.info("Es gibt keine inaktiven Teilnehmer.")
-                else:
-                    st.dataframe(inaktive_teilnehmer)
-        except sqlite3.Error as e:
-            st.error(f"Fehler beim Laden der inaktiven Teilnehmer: {e}")
+    # Option zur Anzeige inaktiver Teilnehmer
+    if st.checkbox("Inaktive Teilnehmer anzeigen"):
+        inaktive_teilnehmer = lade_inaktive_teilnehmer()
+        if inaktive_teilnehmer.empty:
+            st.info("Es gibt keine inaktiven Teilnehmer.")
+        else:
+            st.subheader("Inaktive Teilnehmer")
+            st.dataframe(inaktive_teilnehmer)
 
 if __name__ == "__main__":
     main()
