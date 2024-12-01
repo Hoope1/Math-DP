@@ -1,14 +1,14 @@
 import streamlit as st
-from participant_filter_module import main as participant_filter
-from test_input_feature import main as test_input
-from visualization_prognoses import main as visualization_prognoses
-from reports_module import main as reports
-from warning_system_module import main as warnings
-from design_layout_module import main as design_layout
+from app.participant_filter_module import main as participant_filter
+from app.test_input_feature import main as test_input
+from app.visualization_prognoses import main as visualization_prognoses
+from app.reports_module import main as reports
+from app.warning_system_module import main as warnings
+from app.design_layout_module import main as design_layout
 
 # Hauptfunktion für die Streamlit-Anwendung
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide", page_title="Mathematik-Kursverwaltung")
     st.title("Mathematik-Kursverwaltung")
 
     # Tabs für verschiedene Bereiche
@@ -41,4 +41,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
