@@ -1,36 +1,32 @@
 import streamlit as st
-import pandas as pd
 import sqlite3
+import pandas as pd
+import os
 from datetime import datetime, timedelta
 
-# Verbindung zur SQLite-Datenbank herstellen
-conn = sqlite3.connect('data/math_course_management.db')
+# Absoluten Pfad zur Datenbank verwenden
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+conn = sqlite3.connect(DB_PATH)
 
-# Teilnehmer mit bevorstehendem Austrittsdatum laden
-def load_warnings():
+# Warnungen für Teilnehmer mit nahendem Austrittsdatum
+def check_warnings():
     query = """
-    SELECT name, austrittsdatum
-    FROM teilnehmer
-    WHERE austrittsdatum BETWEEN ? AND ?
+    SELECT name, austrittsdatum FROM teilnehmer
+    WHERE julianday(austrittsdatum) - julianday('now') <= 21
     """
-    today = datetime.today()
-    warning_date = today + timedelta(weeks=3)
-    warnings = pd.read_sql(query, conn, params=(today.strftime("%Y-%m-%d"), warning_date.strftime("%Y-%m-%d")))
-    warnings["austrittsdatum"] = pd.to_datetime(warnings["austrittsdatum"])
-    return warnings
+    return pd.read_sql(query, conn)
 
 # Hauptfunktion für das Warnsystem
 def main():
     st.header("Warnsystem")
 
-    # Teilnehmer mit bevorstehendem Austrittsdatum prüfen
-    warnings = load_warnings()
-
+    warnings = check_warnings()
     if warnings.empty:
-        st.success("Keine Teilnehmer verlassen den Kurs in den nächsten drei Wochen.")
+        st.info("Keine Warnungen.")
     else:
-        st.warning("Die folgenden Teilnehmer verlassen den Kurs bald:")
-        st.table(warnings)
+        st.warning("Teilnehmer mit nahendem Austrittsdatum:")
+        st.dataframe(warnings)
 
 if __name__ == "__main__":
     main()
