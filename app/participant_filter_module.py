@@ -105,13 +105,3 @@ def teilnehmer_ansicht():
 if __name__ == "__main__":
 
     teilnehmer_ansicht()
-
-"""
-
-
-
-# Save the corrected file
-
-with open(participant_filter_module_path, 'w') as file:
-
-    file.write(optimized_participant_filter_module)
