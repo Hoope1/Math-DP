@@ -85,13 +85,3 @@ if __name__ == "__main__":
     setup_database()
 
     main()
-
-"""
-
-
-
-# Save the optimized main.py file
-
-with open(main_py_path, 'w') as file:
-
-    file.write(optimized_main_py)
