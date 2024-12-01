@@ -153,13 +153,3 @@ def testeingabe():
 if __name__ == "__main__":
 
     testeingabe()
-
-"""
-
-
-
-# Save the corrected file
-
-with open(test_input_feature_path, 'w') as file:
-
-    file.write(optimized_test_input_feature)
