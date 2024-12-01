@@ -1,7 +1,5 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+import streamlit as st
+from modules.database_setup import initialize_database
 from app.participant_filter_module import main as participant_filter
 from app.test_input_feature import main as test_input
 from app.visualization_prognoses import main as visualization_prognoses
@@ -9,8 +7,10 @@ from app.reports_module import main as reports
 from app.warning_system_module import main as warnings
 from app.design_layout_module import main as design_layout
 
-import streamlit as st
+# Initialisierung der Datenbank
+initialize_database()
 
+# Hauptfunktion für die Streamlit-Anwendung
 def main():
     st.set_page_config(layout="wide", page_title="Mathematik-Kursverwaltung")
     st.title("Mathematik-Kursverwaltung")
