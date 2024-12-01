@@ -1,47 +1,52 @@
 import streamlit as st
 from modules.database_setup import initialize_database
-from app.participant_filter_module import main as participant_filter
-from app.test_input_feature import main as test_input
-from app.visualization_prognoses import main as visualization_prognoses
-from app.reports_module import main as reports
-from app.warning_system_module import main as warnings
-from app.design_layout_module import main as design_layout
+from app.participant_filter_module import main as teilnehmerverwaltung
+from app.test_input_feature import main as testeingabe
+from app.visualization_prognoses import main as prognose_visualisierung
+from app.reports_module import main as berichte
+from app.warning_system_module import main as warnsystem
+from app.design_layout_module import main as dashboard
 
 # Initialisierung der Datenbank
 initialize_database()
 
-# Hauptfunktion für die Streamlit-Anwendung
+# Hauptfunktion der Streamlit-Anwendung
 def main():
-    st.set_page_config(layout="wide", page_title="Mathematik-Kursverwaltung")
+    st.set_page_config(
+        layout="wide", 
+        page_title="Mathematik-Kursverwaltung"
+    )
     st.title("Mathematik-Kursverwaltung")
 
-    # Tabs für verschiedene Bereiche
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Übersicht", "Teilnehmer", "Tests", "Prognosen", "Berichte"])
+    # Tabs für die verschiedenen Bereiche
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Dashboard", "Teilnehmerverwaltung", "Testergebniseingabe", 
+        "Prognosen", "Berichte", "Warnsystem"
+    ])
 
-    # Übersicht
+    # Dashboard
     with tab1:
-        design_layout()
+        dashboard()
 
     # Teilnehmerverwaltung
     with tab2:
-        participant_filter()
+        teilnehmerverwaltung()
 
-    # Tests
+    # Testergebniseingabe
     with tab3:
-        test_input()
+        testeingabe()
 
     # Prognosen
     with tab4:
-        visualization_prognoses()
+        prognose_visualisierung()
 
     # Berichte
     with tab5:
-        reports()
+        berichte()
 
     # Warnsystem
-    with st.sidebar:
-        st.header("Warnungen")
-        warnings()
+    with tab6:
+        warnsystem()
 
 if __name__ == "__main__":
     main()
