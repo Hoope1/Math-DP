@@ -179,13 +179,3 @@ def berichte():
 if __name__ == "__main__":
 
     berichte()
-
-"""
-
-
-
-# Save the corrected file
-
-with open(reports_module_path, 'w') as file:
-
-    file.write(optimized_reports_module)
