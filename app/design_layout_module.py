@@ -1,65 +1,125 @@
 import streamlit as st
+
 import sqlite3
+
 import pandas as pd
+
 import plotly.express as px
+
 import os
 
+
+
 # Datenbankpfad im temporären Streamlit-Verzeichnis
+
 BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+
 DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
-# Funktion, um Durchschnittswerte für die Kategorien zu berechnen
-def berechne_durchschnittswerte():
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            query = """
-            SELECT 
-                AVG(brueche_erreichte_punkte) AS Brüche, 
-                AVG(textaufgaben_erreichte_punkte) AS Textaufgaben, 
-                AVG(raumvorstellung_erreichte_punkte) AS Raumvorstellung, 
-                AVG(gleichungen_erreichte_punkte) AS Gleichungen, 
-                AVG(grundrechenarten_erreichte_punkte) AS Grundrechenarten, 
-                AVG(zahlenraum_erreichte_punkte) AS Zahlenraum
-            FROM tests
-            """
-            durchschnitt = pd.read_sql(query, conn)
-            return durchschnitt
-    except sqlite3.Error as e:
-        st.error(f"Fehler beim Berechnen der Durchschnittswerte: {e}")
-        return pd.DataFrame()
 
-# Hauptfunktion für das Dashboard und Layout
+
+# Funktion, um Durchschnittswerte für die Kategorien zu berechnen
+
+def berechne_durchschnittswerte():
+
+    try:
+
+        with sqlite3.connect(DB_PATH) as conn:
+
+            query = (
+
+                "SELECT "
+
+                "AVG(brueche_err) AS Brueche, "
+
+                "AVG(gleichungen_err) AS Gleichungen, "
+
+                "AVG(textbeispiele_err) AS Textbeispiele, "
+
+                "AVG(raumvorstellung_err) AS Raumvorstellung, "
+
+                "AVG(grundrechnungsarten_err) AS Grundrechnungsarten, "
+
+                "AVG(zahlenraum_err) AS Zahlenraum "
+
+                "FROM testdaten"
+
+            )
+
+            df = pd.read_sql_query(query, conn)
+
+            return df
+
+    except sqlite3.Error as e:
+
+        st.error(f"Fehler beim Abrufen der Durchschnittswerte: {e}")
+
+        return None
+
+
+
+# Visualisierung der Durchschnittswerte
+
+def visualisiere_durchschnittswerte(df):
+
+    if df is not None and not df.empty:
+
+        df_melted = df.melt(var_name="Kategorie", value_name="Durchschnitt")
+
+        fig = px.bar(
+
+            df_melted, 
+
+            x="Kategorie", 
+
+            y="Durchschnitt", 
+
+            title="Durchschnittswerte der Kategorien",
+
+            labels={"Durchschnitt": "Durchschnitt (%)", "Kategorie": "Kategorien"}
+
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+
+        st.warning("Keine Daten zum Visualisieren vorhanden.")
+
+
+
+# Hauptlayout für das Dashboard
+
 def main():
-    st.header("Dashboard: Übersicht der Durchschnittswerte")
+
+    st.title("Dashboard für Durchschnittswerte")
+
+    st.markdown("Hier sehen Sie die Durchschnittswerte aller Kategorien basierend auf den vorhandenen Testergebnissen.")
+
+    
 
     # Durchschnittswerte berechnen
-    durchschnittswerte = berechne_durchschnittswerte()
-    if durchschnittswerte.empty or durchschnittswerte.isna().all().all():
-        st.warning("Keine Daten für Durchschnittswerte verfügbar.")
-        return
 
-    # Balkendiagramm erstellen
-    df_durchschnitt = durchschnittswerte.melt(var_name="Kategorie", value_name="Durchschnittliche Punkte")
-    fig = px.bar(
-        df_durchschnitt,
-        x="Kategorie",
-        y="Durchschnittliche Punkte",
-        title="Durchschnittliche Leistung nach Kategorien",
-        labels={"Durchschnittliche Punkte": "Punkte", "Kategorie": "Kategorie"},
-        text="Durchschnittliche Punkte"
-    )
-    fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-    fig.update_layout(
-        xaxis_title="Kategorie",
-        yaxis_title="Durchschnittliche Punkte",
-        template="simple_white"
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    df = berechne_durchschnittswerte()
 
-    # Option zur Datenanzeige
-    if st.checkbox("Rohdaten anzeigen"):
-        st.subheader("Durchschnittswerte der Kategorien")
-        st.dataframe(durchschnittswerte)
+    
+
+    # Visualisierung der Durchschnittswerte
+
+    visualisiere_durchschnittswerte(df)
+
+
 
 if __name__ == "__main__":
+
     main()
+
+"""
+
+
+
+# Save the corrected file
+
+with open(design_layout_module_path, 'w') as file:
+
+    file.write(optimized_design_layout_module)
