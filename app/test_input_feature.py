@@ -20,8 +20,9 @@ def insert_test(participant_id, test_date, points_categories, max_points_categor
     conn.execute(
         """
         INSERT INTO tests (
-            teilnehmer_id, test_datum, brueche_erreichte_punkte, brueche_max_punkte,
-            textaufgaben_erreichte_punkte, textaufgaben_max_punkte, 
+            teilnehmer_id, test_datum, 
+            brueche_erreichte_punkte, brueche_max_punkte,
+            textaufgaben_erreichte_punkte, textaufgaben_max_punkte,
             raumvorstellung_erreichte_punkte, raumvorstellung_max_punkte,
             gleichungen_erreichte_punkte, gleichungen_max_punkte,
             grundrechenarten_erreichte_punkte, grundrechenarten_max_punkte,
