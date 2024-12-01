@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
-from datetime import datetime
+import os
 
-# Verbindung zur SQLite-Datenbank herstellen
-conn = sqlite3.connect('data/math_course_management.db')
+# Absoluten Pfad zur Datenbank verwenden
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+conn = sqlite3.connect(DB_PATH)
 
 # Teilnehmerdaten laden und den Status berechnen
 def load_participants():
@@ -15,7 +17,7 @@ def load_participants():
     participants = pd.read_sql(query, conn)
     participants["eintrittsdatum"] = pd.to_datetime(participants["eintrittsdatum"])
     participants["austrittsdatum"] = pd.to_datetime(participants["austrittsdatum"])
-    today = datetime.today()
+    today = pd.Timestamp.today()
     participants["status"] = participants.apply(
         lambda row: "Aktiv" if row["eintrittsdatum"] <= today <= row["austrittsdatum"] else "Inaktiv", axis=1
     )
@@ -38,7 +40,6 @@ def main():
     if participants.empty:
         st.warning("Keine Teilnehmerdaten verfügbar.")
     else:
-        # Teilnehmerliste mit st.dataframe anzeigen
         st.dataframe(participants)
 
 if __name__ == "__main__":
