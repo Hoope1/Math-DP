@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from datetime import datetime
-from st_aggrid import AgGrid
 
 # Verbindung zur SQLite-Datenbank herstellen
 conn = sqlite3.connect('data/math_course_management.db')
@@ -39,9 +38,8 @@ def main():
     if participants.empty:
         st.warning("Keine Teilnehmerdaten verfügbar.")
     else:
-        # Teilnehmerliste mit AgGrid anzeigen
-        AgGrid(participants)
+        # Teilnehmerliste mit st.dataframe anzeigen
+        st.dataframe(participants)
 
 if __name__ == "__main__":
     main()
-  
