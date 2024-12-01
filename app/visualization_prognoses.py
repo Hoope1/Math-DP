@@ -1,61 +1,42 @@
 import streamlit as st
-import pandas as pd
 import sqlite3
+import pandas as pd
 import plotly.express as px
+import os
 
-# Verbindung zur SQLite-Datenbank herstellen
-conn = sqlite3.connect('data/math_course_management.db')
+# Absoluten Pfad zur Datenbank verwenden
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+conn = sqlite3.connect(DB_PATH)
 
-# Prognosedaten für einen bestimmten Teilnehmer laden
-def load_prognoses(participant_id):
+# Prognosedaten laden
+def load_prognoses():
     query = """
-    SELECT prognose_datum, prognose_brueche, prognose_textaufgaben, 
-           prognose_raumvorstellung, prognose_gleichungen, prognose_grundrechenarten, 
-           prognose_zahlenraum
+    SELECT prognose_datum, prognose_brueche, prognose_textaufgaben,
+           prognose_raumvorstellung, prognose_gleichungen,
+           prognose_grundrechenarten, prognose_zahlenraum, prognose_gesamt
     FROM prognosen
-    WHERE teilnehmer_id = ?
     """
-    return pd.read_sql(query, conn, params=(participant_id,))
+    return pd.read_sql(query, conn)
 
-# Hauptfunktion zur Visualisierung von Prognosen
+# Hauptfunktion für die Visualisierung der Prognosen
 def main():
-    st.header("Prognosen Visualisieren")
-
-    # Teilnehmerdaten laden
-    participants = pd.read_sql("SELECT teilnehmer_id, name FROM teilnehmer", conn)
-    if participants.empty:
-        st.warning("Keine Teilnehmer vorhanden. Bitte zuerst Teilnehmer hinzufügen.")
-        return
-
-    # Teilnehmerauswahl
-    participant_name = st.selectbox("Wähle einen Teilnehmer", participants["name"].tolist())
-    selected_participant = participants[participants["name"] == participant_name].iloc[0]
+    st.header("Prognosen")
 
     # Prognosedaten laden
-    prognoses = load_prognoses(selected_participant["teilnehmer_id"])
+    prognoses = load_prognoses()
     if prognoses.empty:
-        st.warning(f"Keine Prognosedaten für {participant_name} verfügbar.")
+        st.warning("Keine Prognosedaten verfügbar.")
         return
 
-    # Daten für die Visualisierung vorbereiten
-    prognoses["prognose_datum"] = pd.to_datetime(prognoses["prognose_datum"])
-    categories = ["prognose_brueche", "prognose_textaufgaben", "prognose_raumvorstellung", 
-                  "prognose_gleichungen", "prognose_grundrechenarten", "prognose_zahlenraum"]
-    prognoses_melted = prognoses.melt(id_vars=["prognose_datum"], value_vars=categories, 
-                                      var_name="Kategorie", value_name="Prozent")
-    prognoses_melted["Kategorie"] = prognoses_melted["Kategorie"].str.replace("prognose_", "")
-
-    # Liniendiagramm erstellen
+    # Diagramm erstellen
     fig = px.line(
-        prognoses_melted,
-        x="prognose_datum",
-        y="Prozent",
-        color="Kategorie",
-        title=f"Prognosen der nächsten 30 Tage für {participant_name}",
-        labels={"prognose_datum": "Datum", "Prozent": "Leistung (%)"}
+        prognoses.melt(id_vars=["prognose_datum"], var_name="Kategorie", value_name="Prozent"),
+        x="prognose_datum", y="Prozent", color="Kategorie",
+        title="Prognosen für die mathematischen Kategorien",
+        labels={"prognose_datum": "Datum", "Prozent": "Prognose (%)"}
     )
-    fig.update_layout(legend_title_text="Kategorie", xaxis_title="Datum", yaxis_title="Prozent (%)")
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
     main()
