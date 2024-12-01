@@ -4,9 +4,9 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# Absoluter Pfad zur Datenbank
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
 # Funktion, um Durchschnittswerte für die Kategorien zu berechnen
 def berechne_durchschnittswerte():
