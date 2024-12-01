@@ -3,6 +3,7 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 import os
+from modules.flaml_module import lade_daten_fuer_automl, durchfuehren_automl, erstelle_prognose
 
 # Datenbankpfad im temporären Streamlit-Verzeichnis
 BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
@@ -79,6 +80,23 @@ def main():
             template="simple_white"
         )
         st.plotly_chart(fig_all, use_container_width=True)
+
+    # AutoML-Modelltraining und Prognose
+    st.subheader("Prognosen mit AutoML")
+    if st.button("Trainiere AutoML-Modell"):
+        daten = lade_daten_fuer_automl()
+        automl_model = durchfuehren_automl(daten)
+        if automl_model:
+            st.success("Das AutoML-Modell wurde erfolgreich trainiert!")
+            
+            # Neue Daten für Prognose simulieren
+            neue_daten = daten.drop(columns=["Gesamtprozent"]).head(1)  # Beispiel: Erste Zeile für Prognose
+            prognosen = erstelle_prognose(automl_model, neue_daten)
+            if prognosen is not None:
+                st.write("Erstellte Prognosen:")
+                st.write(prognosen)
+            else:
+                st.error("Fehler bei der Erstellung der Prognosen.")
 
 if __name__ == "__main__":
     main()
