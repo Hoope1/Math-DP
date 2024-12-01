@@ -1,52 +1,97 @@
 import streamlit as st
+
 from modules.database_setup import initialize_database
-from app.participant_filter_module import main as teilnehmerverwaltung
-from app.test_input_feature import main as testeingabe
-from app.visualization_prognoses import main as prognose_visualisierung
-from app.reports_module import main as berichte
-from app.warning_system_module import main as warnsystem
-from app.design_layout_module import main as dashboard
 
-# Initialisierung der Datenbank
-initialize_database()
+from app.participant_filter_module import main as manage_participants
 
-# Hauptfunktion der Streamlit-Anwendung
+from app.test_input_feature import main as test_input
+
+from app.visualization_prognoses import main as visualize_prognoses
+
+from app.reports_module import main as generate_reports
+
+from app.warning_system_module import main as warning_system
+
+from app.design_layout_module import main as layout_dashboard
+
+
+
+# Initialize database
+
+def setup_database():
+
+    try:
+
+        initialize_database()
+
+        st.success("Database initialized successfully.")
+
+    except Exception as e:
+
+        st.error("Failed to initialize the database.")
+
+        st.error(f"Error details: {e}")
+
+
+
+# Main function for Streamlit App
+
 def main():
-    st.set_page_config(
-        layout="wide", 
-        page_title="Mathematik-Kursverwaltung"
-    )
-    st.title("Mathematik-Kursverwaltung")
 
-    # Tabs für die verschiedenen Bereiche
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "Dashboard", "Teilnehmerverwaltung", "Testergebniseingabe", 
-        "Prognosen", "Berichte", "Warnsystem"
-    ])
+    st.set_page_config(page_title="Math Course Management", layout="wide")
 
-    # Dashboard
-    with tab1:
-        dashboard()
 
-    # Teilnehmerverwaltung
-    with tab2:
-        teilnehmerverwaltung()
 
-    # Testergebniseingabe
-    with tab3:
-        testeingabe()
+    # Sidebar navigation
 
-    # Prognosen
-    with tab4:
-        prognose_visualisierung()
+    st.sidebar.title("Navigation")
 
-    # Berichte
-    with tab5:
-        berichte()
+    options = {
 
-    # Warnsystem
-    with tab6:
-        warnsystem()
+        "Dashboard": layout_dashboard,
+
+        "Manage Participants": manage_participants,
+
+        "Test Input": test_input,
+
+        "Visualization": visualize_prognoses,
+
+        "Generate Reports": generate_reports,
+
+        "Warning System": warning_system,
+
+    }
+
+    choice = st.sidebar.radio("Go to", list(options.keys()))
+
+
+
+    # Execute the chosen module
+
+    if choice in options:
+
+        options[choice]()
+
+    else:
+
+        st.error("Invalid selection.")
+
+
+
+# Execute the app
 
 if __name__ == "__main__":
+
+    setup_database()
+
     main()
+
+"""
+
+
+
+# Save the optimized main.py file
+
+with open(main_py_path, 'w') as file:
+
+    file.write(optimized_main_py)
