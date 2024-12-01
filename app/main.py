@@ -2,15 +2,15 @@ import streamlit as st
 
 from modules.database_setup import initialize_database
 
-from app.participant_filter_module import main as manage_participants
+from app.participant_filter_module import teilnehmer_ansicht as manage_participants
 
-from app.test_input_feature import main as test_input
+from app.test_input_feature import testeingabe as test_input
 
-from app.visualization_prognoses import main as visualize_prognoses
+from app.visualization_prognoses import prognose_visualisierung as visualize_prognoses
 
-from app.reports_module import main as generate_reports
+from app.reports_module import berichte as generate_reports
 
-from app.warning_system_module import main as warning_system
+from app.warning_system_module import warnsystem as warning_system
 
 from app.design_layout_module import main as layout_dashboard
 
@@ -20,29 +20,13 @@ from app.design_layout_module import main as layout_dashboard
 
 def setup_database():
 
-    try:
-
-        initialize_database()
-
-        st.success("Database initialized successfully.")
-
-    except Exception as e:
-
-        st.error("Failed to initialize the database.")
-
-        st.error(f"Error details: {e}")
+    initialize_database()
 
 
 
-# Main function for Streamlit App
+# Streamlit navigation setup
 
 def main():
-
-    st.set_page_config(page_title="Math Course Management", layout="wide")
-
-
-
-    # Sidebar navigation
 
     st.sidebar.title("Navigation")
 
@@ -50,38 +34,30 @@ def main():
 
         "Dashboard": layout_dashboard,
 
-        "Manage Participants": manage_participants,
+        "Teilnehmer verwalten": manage_participants,
 
-        "Test Input": test_input,
+        "Testergebnisse eingeben": test_input,
 
-        "Visualization": visualize_prognoses,
+        "Prognosen visualisieren": visualize_prognoses,
 
-        "Generate Reports": generate_reports,
+        "Berichte generieren": generate_reports,
 
-        "Warning System": warning_system,
+        "Warnsystem": warning_system
 
     }
 
-    choice = st.sidebar.radio("Go to", list(options.keys()))
 
 
+    choice = st.sidebar.radio("Wähle eine Seite:", list(options.keys()))
 
-    # Execute the chosen module
+    setup_database()  # Ensure the database is initialized before loading any page
 
-    if choice in options:
+    st.sidebar.markdown("---")
 
-        options[choice]()
-
-    else:
-
-        st.error("Invalid selection.")
+    options[choice]()  # Load the selected module
 
 
-
-# Execute the app
 
 if __name__ == "__main__":
-
-    setup_database()
 
     main()
