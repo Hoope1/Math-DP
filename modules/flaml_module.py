@@ -1,80 +1,54 @@
 import pandas as pd
-import sqlite3
 from flaml import AutoML
+import sqlite3
+import os
 
-# Verbindung zur SQLite-Datenbank herstellen
-conn = sqlite3.connect('data/math_course_management.db')
+# Datenbankpfad im temporären Streamlit-Verzeichnis
+BASE_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/tmp")
+DB_PATH = os.path.join(BASE_DIR, 'math_course_management.db')
 
-# Historische Testdaten laden
-def load_test_data():
-    query = """
-    SELECT 
-        test_datum, brueche_erreichte_punkte, textaufgaben_erreichte_punkte, 
-        raumvorstellung_erreichte_punkte, gleichungen_erreichte_punkte, 
-        grundrechenarten_erreichte_punkte, zahlenraum_erreichte_punkte,
-        gesamt_prozent
-    FROM tests
-    """
-    return pd.read_sql(query, conn)
-
-# FLAML-Modelle für jede Kategorie trainieren
-def train_flaml(data):
-    data['test_datum'] = pd.to_datetime(data['test_datum'])
-    data['days_since_start'] = (data['test_datum'] - data['test_datum'].min()).dt.days
-    features = data[['days_since_start']]
-    targets = data[['brueche_erreichte_punkte', 'textaufgaben_erreichte_punkte',
-                    'raumvorstellung_erreichte_punkte', 'gleichungen_erreichte_punkte',
-                    'grundrechenarten_erreichte_punkte', 'zahlenraum_erreichte_punkte']]
-    
-    models = {}
-    for category in targets.columns:
-        automl = AutoML()
-        automl.fit(X_train=features, y_train=targets[category], task="regression")
-        models[category] = automl
-    return models
-
-# Prognosen für zukünftige Werte erstellen
-def predict_future(models, days_ahead=30):
-    future_days = pd.DataFrame({'days_since_start': range(1, days_ahead + 1)})
-    predictions = {}
-    for category, model in models.items():
-        predictions[category] = model.predict(future_days)
-    predictions['days_since_start'] = future_days['days_since_start']
-    return pd.DataFrame(predictions)
-
-# Prognosen in die Datenbank speichern
-def save_predictions(predictions, participant_id):
-    for _, row in predictions.iterrows():
-        conn.execute(
+# Funktion zur Vorbereitung der Daten für AutoML
+def lade_daten_fuer_automl():
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            query = """
+            SELECT 
+                brueche_erreichte_punkte AS Brüche, 
+                textaufgaben_erreichte_punkte AS Textaufgaben, 
+                raumvorstellung_erreichte_punkte AS Raumvorstellung, 
+                gleichungen_erreichte_punkte AS Gleichungen, 
+                grundrechenarten_erreichte_punkte AS Grundrechenarten, 
+                zahlenraum_erreichte_punkte AS Zahlenraum, 
+                gesamt_prozent AS Gesamtprozent
+            FROM tests
             """
-            INSERT INTO prognosen (
-                teilnehmer_id, prognose_datum, prognose_brueche, prognose_textaufgaben,
-                prognose_raumvorstellung, prognose_gleichungen, prognose_grundrechenarten, 
-                prognose_zahlenraum, prognose_gesamt
-            )
-            VALUES (?, DATE('now', ? || ' days'), ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                participant_id, int(row['days_since_start']),
-                row.get('brueche_erreichte_punkte', 0), row.get('textaufgaben_erreichte_punkte', 0),
-                row.get('raumvorstellung_erreichte_punkte', 0), row.get('gleichungen_erreichte_punkte', 0),
-                row.get('grundrechenarten_erreichte_punkte', 0), row.get('zahlenraum_erreichte_punkte', 0),
-                row.mean()
-            )
-        )
-    conn.commit()
+            daten = pd.read_sql(query, conn)
+            return daten
+    except sqlite3.Error as e:
+        print(f"Fehler beim Laden der Daten: {e}")
+        return pd.DataFrame()
 
-# Hauptfunktion für FLAML-Prozesse
-def main():
-    data = load_test_data()
-    if data.empty:
-        print("Keine Testdaten verfügbar für das Training.")
-        return
-    models = train_flaml(data)
-    future_predictions = predict_future(models)
-    save_predictions(future_predictions, participant_id=1)  # Beispiel-ID
-    print("Prognosen erfolgreich erstellt und gespeichert.")
+# Funktion zur Durchführung von AutoML
+def durchfuehren_automl(daten):
+    if daten.empty:
+        print("Keine Daten für das Training verfügbar.")
+        return None
 
-if __name__ == "__main__":
-    main()
-  
+    # Merkmale (X) und Zielwert (y) definieren
+    X = daten.drop(columns=["Gesamtprozent"])
+    y = daten["Gesamtprozent"]
+
+    # AutoML-Instanz erstellen
+    automl = AutoML()
+    automl.fit(X_train=X, y_train=y, task="regression", time_budget=60)  # Zeitbudget: 60 Sekunden
+
+    return automl
+
+# Prognosen mit dem trainierten Modell erstellen
+def erstelle_prognose(automl_model, neue_daten):
+    try:
+        prognosen = automl_model.predict(neue_daten)
+        return prognosen
+    except Exception as e:
+        print(f"Fehler bei der Prognoseerstellung: {e}")
+        return None
